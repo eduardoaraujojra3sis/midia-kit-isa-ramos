@@ -154,13 +154,13 @@ export default function VideoWorks() {
   }, [])
 
   const goPrev = useCallback(() => {
-    const next = (currentIndex - 1 + videos.length) % videos.length
-    scrollToIndex(next)
+    if (currentIndex === 0) return
+    scrollToIndex(currentIndex - 1)
   }, [currentIndex, scrollToIndex])
 
   const goNext = useCallback(() => {
-    const next = (currentIndex + 1) % videos.length
-    scrollToIndex(next)
+    if (currentIndex === videos.length - 1) return
+    scrollToIndex(currentIndex + 1)
   }, [currentIndex, scrollToIndex])
 
   const detectIndex = useCallback(() => {
@@ -213,8 +213,9 @@ export default function VideoWorks() {
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging || !scrollRef.current) return
     e.preventDefault()
-    const x = e.pageX - scrollRef.current.offsetLeft
-    scrollRef.current.scrollLeft = scrollStart - (x - startX) * 1.5
+    const el = scrollRef.current
+    const x = e.pageX - el.offsetLeft
+    el.scrollLeft = Math.max(0, Math.min(scrollStart - (x - startX) * 1.5, el.scrollWidth - el.clientWidth))
   }, [isDragging, startX, scrollStart])
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -229,8 +230,9 @@ export default function VideoWorks() {
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!scrollRef.current) return
-    const x = e.touches[0].pageX - scrollRef.current.offsetLeft
-    scrollRef.current.scrollLeft = scrollStart - (x - startX) * 1.5
+    const el = scrollRef.current
+    const x = e.touches[0].pageX - el.offsetLeft
+    el.scrollLeft = Math.max(0, Math.min(scrollStart - (x - startX) * 1.5, el.scrollWidth - el.clientWidth))
   }, [startX, scrollStart])
 
   return (
@@ -250,13 +252,15 @@ export default function VideoWorks() {
         </div>
 
         <div className="relative">
-          <button
-            type="button"
-            onClick={goPrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
-          >
-            <ChevronLeft size={20} className="text-marrom-claro" />
-          </button>
+          {currentIndex > 0 && (
+            <button
+              type="button"
+              onClick={goPrev}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
+            >
+              <ChevronLeft size={20} className="text-marrom-claro" />
+            </button>
+          )}
 
           <div
             ref={scrollRef}
@@ -282,13 +286,15 @@ export default function VideoWorks() {
             ))}
           </div>
 
-          <button
-            type="button"
-            onClick={goNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
-          >
-            <ChevronRight size={20} className="text-marrom-claro" />
-          </button>
+          {currentIndex < videos.length - 1 && (
+            <button
+              type="button"
+              onClick={goNext}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
+            >
+              <ChevronRight size={20} className="text-marrom-claro" />
+            </button>
+          )}
         </div>
       </div>
     </section>
