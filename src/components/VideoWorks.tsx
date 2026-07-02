@@ -1,6 +1,6 @@
 import { Play, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useLazyVideo } from '../hooks/useLazyVideo'
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react'
 
 interface Video {
   title: string
@@ -141,13 +141,35 @@ export default function VideoWorks() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
-  const [scrollLeft, setScrollLeft] = useState(0)
+  const [scrollStart, setScrollStart] = useState(0)
+  const [scrollPos, setScrollPos] = useState(0)
+  const [maxScroll, setMaxScroll] = useState(0)
+
+  const updateScrollBounds = useCallback(() => {
+    if (!scrollRef.current) return
+    const el = scrollRef.current
+    setScrollPos(el.scrollLeft)
+    setMaxScroll(el.scrollWidth - el.clientWidth)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    updateScrollBounds()
+    el.addEventListener('scroll', updateScrollBounds, { passive: true })
+    const ro = new ResizeObserver(updateScrollBounds)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener('scroll', updateScrollBounds)
+      ro.disconnect()
+    }
+  }, [updateScrollBounds])
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!scrollRef.current) return
     setIsDragging(true)
     setStartX(e.pageX - scrollRef.current.offsetLeft)
-    setScrollLeft(scrollRef.current.scrollLeft)
+    setScrollStart(scrollRef.current.scrollLeft)
   }, [])
 
   const handleMouseUp = useCallback(() => {
@@ -158,20 +180,20 @@ export default function VideoWorks() {
     if (!isDragging || !scrollRef.current) return
     e.preventDefault()
     const x = e.pageX - scrollRef.current.offsetLeft
-    scrollRef.current.scrollLeft = scrollLeft - (x - startX) * 1.5
-  }, [isDragging, startX, scrollLeft])
+    scrollRef.current.scrollLeft = scrollStart - (x - startX) * 1.5
+  }, [isDragging, startX, scrollStart])
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (!scrollRef.current) return
     setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft)
-    setScrollLeft(scrollRef.current.scrollLeft)
+    setScrollStart(scrollRef.current.scrollLeft)
   }, [])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!scrollRef.current) return
     const x = e.touches[0].pageX - scrollRef.current.offsetLeft
-    scrollRef.current.scrollLeft = scrollLeft - (x - startX) * 1.5
-  }, [startX, scrollLeft])
+    scrollRef.current.scrollLeft = scrollStart - (x - startX) * 1.5
+  }, [startX, scrollStart])
 
   const scroll = useCallback((direction: 'left' | 'right') => {
     if (!scrollRef.current) return
@@ -198,13 +220,15 @@ export default function VideoWorks() {
         </div>
 
         <div className="relative">
-          <button
-            type="button"
-            onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
-          >
-            <ChevronLeft size={20} className="text-marrom-claro" />
-          </button>
+          {scrollPos > 0 && (
+            <button
+              type="button"
+              onClick={() => scroll('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
+            >
+              <ChevronLeft size={20} className="text-marrom-claro" />
+            </button>
+          )}
 
           <div
             ref={scrollRef}
@@ -224,13 +248,15 @@ export default function VideoWorks() {
             ))}
           </div>
 
-          <button
-            type="button"
-            onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
-          >
-            <ChevronRight size={20} className="text-marrom-claro" />
-          </button>
+          {scrollPos < maxScroll && (
+            <button
+              type="button"
+              onClick={() => scroll('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
+            >
+              <ChevronRight size={20} className="text-marrom-claro" />
+            </button>
+          )}
         </div>
       </div>
     </section>
