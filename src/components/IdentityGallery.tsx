@@ -4,8 +4,6 @@ import {
   Shirt,
   Sparkles,
   Star,
-  ChevronLeft,
-  ChevronRight,
   X,
 } from 'lucide-react'
 import { useRef, useState } from 'react'
@@ -68,7 +66,7 @@ function CardGrid({ item, onClick: clickHandler }: { item: Card; onClick?: () =>
 
   return (
     <Tag
-      ref={containerRef}
+      ref={containerRef as React.Ref<never>}
       {...(isClickable ? { type: 'button' as const, onClick: clickHandler } : {})}
       className="group relative overflow-hidden rounded-2xl bg-white card-elevated transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-dourado/20 border border-bege/30 min-h-[260px] md:min-h-[300px] w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-dourado/50"
     >
@@ -139,15 +137,6 @@ function CardGrid({ item, onClick: clickHandler }: { item: Card; onClick?: () =>
 export default function IdentityGallery() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [modalUrl, setModalUrl] = useState<string | null>(null)
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (!scrollRef.current) return
-    const scrollAmount = scrollRef.current.clientWidth * 0.8
-    scrollRef.current.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth',
-    })
-  }
 
   const embedUrl = (url: string) => {
     const match = url.match(/instagram\.com\/reel\/([^/?]+)/)
@@ -223,29 +212,14 @@ export default function IdentityGallery() {
             ))}
           </div>
 
-          <button
-            onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-9 h-9 rounded-full bg-white/90 shadow-md shadow-bege/30 flex items-center justify-center text-cafe hover:bg-white transition-all backdrop-blur-sm z-10"
-            aria-label="Anterior"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 w-9 h-9 rounded-full bg-white/90 shadow-md shadow-bege/30 flex items-center justify-center text-cafe hover:bg-white transition-all backdrop-blur-sm z-10"
-            aria-label="Próximo"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
-
-        <div className="md:hidden flex justify-center gap-1.5 mt-4">
-          {cards.map((_, i) => (
-            <div
-              key={i}
-              className="w-1.5 h-1.5 rounded-full bg-bege/50"
-            />
-          ))}
+          <div className="md:hidden flex justify-center gap-1.5 mt-4">
+            {cards.map((_, i) => (
+              <div
+                key={i}
+                className="w-1.5 h-1.5 rounded-full bg-bege/50"
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
