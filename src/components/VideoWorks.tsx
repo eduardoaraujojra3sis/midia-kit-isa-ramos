@@ -1,4 +1,4 @@
-import { Play, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Play } from 'lucide-react'
 import { useLazyVideo } from '../hooks/useLazyVideo'
 import { useRef, useState, useCallback, useEffect } from 'react'
 
@@ -146,23 +146,6 @@ export default function VideoWorks() {
   const [scrollStart, setScrollStart] = useState(0)
   const snapTimer = useRef<ReturnType<typeof setTimeout>>()
 
-  const scrollToIndex = useCallback((index: number) => {
-    const el = cardRefs.current[index]
-    if (!el) return
-    el.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
-    setCurrentIndex(index)
-  }, [])
-
-  const goPrev = useCallback(() => {
-    if (currentIndex === 0) return
-    scrollToIndex(currentIndex - 1)
-  }, [currentIndex, scrollToIndex])
-
-  const goNext = useCallback(() => {
-    if (currentIndex === videos.length - 1) return
-    scrollToIndex(currentIndex + 1)
-  }, [currentIndex, scrollToIndex])
-
   const detectIndex = useCallback(() => {
     if (!scrollRef.current) return
     const container = scrollRef.current
@@ -252,16 +235,6 @@ export default function VideoWorks() {
         </div>
 
         <div className="relative">
-          {currentIndex > 0 && (
-            <button
-              type="button"
-              onClick={goPrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
-            >
-              <ChevronLeft size={20} className="text-marrom-claro" />
-            </button>
-          )}
-
           <div
             ref={scrollRef}
             onMouseDown={handleMouseDown}
@@ -285,16 +258,6 @@ export default function VideoWorks() {
               </div>
             ))}
           </div>
-
-          {currentIndex < videos.length - 1 && (
-            <button
-              type="button"
-              onClick={goNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
-            >
-              <ChevronRight size={20} className="text-marrom-claro" />
-            </button>
-          )}
         </div>
       </div>
     </section>
