@@ -139,31 +139,64 @@ function VideoCard({ video }: { video: Video }) {
 
 export default function VideoWorks() {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollStart, setScrollStart] = useState(0)
-  const [scrollPos, setScrollPos] = useState(0)
-  const [maxScroll, setMaxScroll] = useState(0)
+  const snapTimer = useRef<ReturnType<typeof setTimeout>>()
 
-  const updateScrollBounds = useCallback(() => {
-    if (!scrollRef.current) return
-    const el = scrollRef.current
-    setScrollPos(el.scrollLeft)
-    setMaxScroll(el.scrollWidth - el.clientWidth)
+  const scrollToIndex = useCallback((index: number) => {
+    const el = cardRefs.current[index]
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
+    setCurrentIndex(index)
   }, [])
+
+  const goPrev = useCallback(() => {
+    const next = (currentIndex - 1 + videos.length) % videos.length
+    scrollToIndex(next)
+  }, [currentIndex, scrollToIndex])
+
+  const goNext = useCallback(() => {
+    const next = (currentIndex + 1) % videos.length
+    scrollToIndex(next)
+  }, [currentIndex, scrollToIndex])
+
+  const detectIndex = useCallback(() => {
+    if (!scrollRef.current) return
+    const container = scrollRef.current
+    const containerRect = container.getBoundingClientRect()
+    const center = containerRect.left + containerRect.width / 2
+    let closestIdx = currentIndex
+    let closestDist = Infinity
+    cardRefs.current.forEach((card, i) => {
+      if (!card) return
+      const rect = card.getBoundingClientRect()
+      const cardCenter = rect.left + rect.width / 2
+      const dist = Math.abs(center - cardCenter)
+      if (dist < closestDist) {
+        closestDist = dist
+        closestIdx = i
+      }
+    })
+    setCurrentIndex(closestIdx)
+  }, [currentIndex])
+
+  const handleScroll = useCallback(() => {
+    clearTimeout(snapTimer.current)
+    snapTimer.current = setTimeout(detectIndex, 100)
+  }, [detectIndex])
 
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    updateScrollBounds()
-    el.addEventListener('scroll', updateScrollBounds, { passive: true })
-    const ro = new ResizeObserver(updateScrollBounds)
-    ro.observe(el)
+    el.addEventListener('scroll', handleScroll, { passive: true })
     return () => {
-      el.removeEventListener('scroll', updateScrollBounds)
-      ro.disconnect()
+      el.removeEventListener('scroll', handleScroll)
+      clearTimeout(snapTimer.current)
     }
-  }, [updateScrollBounds])
+  }, [handleScroll])
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!scrollRef.current) return
@@ -174,7 +207,8 @@ export default function VideoWorks() {
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false)
-  }, [])
+    detectIndex()
+  }, [detectIndex])
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging || !scrollRef.current) return
@@ -189,19 +223,15 @@ export default function VideoWorks() {
     setScrollStart(scrollRef.current.scrollLeft)
   }, [])
 
+  const handleTouchEnd = useCallback(() => {
+    detectIndex()
+  }, [detectIndex])
+
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!scrollRef.current) return
     const x = e.touches[0].pageX - scrollRef.current.offsetLeft
     scrollRef.current.scrollLeft = scrollStart - (x - startX) * 1.5
   }, [startX, scrollStart])
-
-  const scroll = useCallback((direction: 'left' | 'right') => {
-    if (!scrollRef.current) return
-    const cardWidth = scrollRef.current.querySelector('div')?.offsetWidth ?? 0
-    const gap = 16
-    const scrollAmount = cardWidth + gap
-    scrollRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
-  }, [])
 
   return (
     <section id="videos" className="relative py-20 md:py-32 px-6">
@@ -209,26 +239,24 @@ export default function VideoWorks() {
 
       <div className="max-w-7xl mx-auto relative z-10 reveal">
         <div className="text-center mb-12 md:mb-16">
-          <span className="section-label">Conteúdo em Vídeo</span>
+          <span className="section-label">Conteudo em Video</span>
           <h2 className="section-title font-display text-balance">
             Trabalhos em{' '}
-            <span className="gradient-text">vídeo</span>
+            <span className="gradient-text">video</span>
           </h2>
           <p className="section-subtitle mt-4 md:mt-6">
-            Vídeos curtos, autênticos e estratégicos para conectar marcas ao público certo.
+            Videos curtos, autenticos e estrategicos para conectar marcas ao publico certo.
           </p>
         </div>
 
         <div className="relative">
-          {scrollPos > 0 && (
-            <button
-              type="button"
-              onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
-            >
-              <ChevronLeft size={20} className="text-marrom-claro" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={goPrev}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
+          >
+            <ChevronLeft size={20} className="text-marrom-claro" />
+          </button>
 
           <div
             ref={scrollRef}
@@ -237,26 +265,30 @@ export default function VideoWorks() {
             onMouseLeave={handleMouseUp}
             onMouseMove={handleMouseMove}
             onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             onTouchMove={handleTouchMove}
             className="flex gap-4 md:gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 cursor-grab active:cursor-grabbing"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {videos.map((video, i) => (
-              <div key={video.title} className="snap-start shrink-0 w-40 md:w-48 animate-stagger" style={{ animationDelay: `${i * 0.1}s` }}>
+              <div
+                key={video.title}
+                ref={(el) => { cardRefs.current[i] = el }}
+                className="snap-start shrink-0 w-40 md:w-48 animate-stagger"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              >
                 <VideoCard video={video} />
               </div>
             ))}
           </div>
 
-          {scrollPos < maxScroll && (
-            <button
-              type="button"
-              onClick={() => scroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
-            >
-              <ChevronRight size={20} className="text-marrom-claro" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={goNext}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-white transition-all duration-300 hover:scale-110 hidden md:flex"
+          >
+            <ChevronRight size={20} className="text-marrom-claro" />
+          </button>
         </div>
       </div>
     </section>
