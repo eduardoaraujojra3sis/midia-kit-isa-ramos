@@ -24,7 +24,7 @@ export const profile = {
     commercialInstagram: '@contatoisamramos_',
     commercialInstagramUrl: 'https://www.instagram.com/contatoisamramos_',
     whatsapp: '5563985157647',
-    whatsappMessage: 'Olá! Vim pelo seu Media Kit e tenho interesse em solicitar uma proposta de parceria.',
+    whatsappMessage: 'Olá! Vim pelo seu Midia Kit e tenho interesse em solicitar uma proposta de parceria.',
   },
 
   metrics: {
@@ -266,6 +266,6 @@ export const profile = {
     emailSubject: 'Proposta de parceria - Isa Ramos',
     commercialInstagram: '@contatoisamramos_',
     whatsapp: '5563985157647',
-    whatsappMessage: 'Olá! Vim pelo seu Media Kit e tenho interesse em solicitar uma proposta de parceria.',
+    whatsappMessage: 'Olá! Vim pelo seu Midia Kit e tenho interesse em solicitar uma proposta de parceria.',
   },
 }

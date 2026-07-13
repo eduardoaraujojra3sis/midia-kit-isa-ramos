@@ -100,12 +100,14 @@ export default function App() {
       {showSplash && (
         <div className="fixed inset-0 z-[100] bg-cafe flex items-center justify-center">
           <div className="text-center animate-fade-in w-full max-w-xs mx-auto px-6">
-            <p className="font-cursive text-6xl md:text-7xl text-dourado mb-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <p className="font-cursive text-dourado text-5xl md:text-6xl mb-3 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
               Isa Ramos
             </p>
-            <div className="w-16 h-0.5 bg-gradient-to-r from-dourado to-rosa-metalico mx-auto mb-6 animate-draw-line" style={{ animationDelay: '0.6s' }} />
-            <p className="text-bege/60 text-xs tracking-[0.25em] uppercase mb-6 animate-fade-in" style={{ animationDelay: '0.8s' }}>
-              Media Kit
+            <p className="text-dourado text-lg tracking-[0.3em] uppercase mb-4 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+              Midia Kit
+            </p>
+            <p className="text-bege/50 text-[10px] tracking-[0.2em] uppercase mb-6 animate-fade-in" style={{ animationDelay: '0.8s' }}>
+              Influenciadora &bull; Country Lifestyle &bull; Criadora de Conteúdo
             </p>
             <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
               <div

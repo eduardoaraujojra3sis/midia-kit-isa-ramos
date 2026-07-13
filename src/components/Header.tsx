@@ -18,7 +18,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-16 md:h-20">
           <div className="flex items-center gap-8">
             <a href="#hero" className="flex items-center gap-2.5 group">
-              <span className="font-cursive text-2xl md:text-3xl text-dourado">{profile.name}</span>
+              <span className="font-cursive text-3xl md:text-4xl text-dourado">{profile.name}</span>
             </a>
 
             <nav className="hidden md:flex items-center gap-8">
